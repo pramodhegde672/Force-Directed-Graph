@@ -14,7 +14,7 @@ function App() {
         Force Graph Example
       </header>
       <section className="Main">
-        <ForceGraph linksData={data.links} nodesData={data.nodes} nodeHoverTooltip={nodeHoverTooltip} />
+        <ForceGraph linksData={data.edges} nodesData={data.nodes} nodeHoverTooltip={nodeHoverTooltip} />
       </section>
     </div>
   );
