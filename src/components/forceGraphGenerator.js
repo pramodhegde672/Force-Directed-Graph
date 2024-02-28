@@ -8,6 +8,9 @@ export function runForceGraph(
   nodesData,
   nodeHoverTooltip
 ) {
+  // Clear the container
+  d3.select(container).selectAll("*").remove();
+
   const links = linksData.map((d) => Object.assign({}, d));
   const nodes = nodesData.map((d) => Object.assign({}, d));
 
@@ -15,14 +18,16 @@ export function runForceGraph(
   const height = containerRect.height;
   const width = containerRect.width;
 
-  const color = () => { return "gray"; };
+  const color = () => {
+    return "blue";
+  };
 
-  const icon = (d) => {
-    return d.data.type === "Category" ? "\uf222" : "\F66B";
-  }
+  // const icon = (d) => {
+  //   return d.data.type === "Category" ? "\uf222" : "\F66B";
+  // }
 
   const getClass = (d) => {
-    console.log(d,'c')
+    console.log(d, "c");
     return d.data.type === "Category" ? styles.male : styles.female;
   };
 
@@ -63,26 +68,25 @@ export function runForceGraph(
   const div = d3.select("#graph-tooltip");
 
   const addTooltip = (hoverTooltip, d, x, y) => {
+    div.transition().duration(200).style("opacity", 0.9);
     div
-      .transition()
-      .duration(200)
-      .style("opacity", 0.9);
-    div
-      .html(hoverTooltip(d.data.type)) 
+      .html(
+        `<strong>ID:</strong> ${d.data.id}<br> <strong>Product Count:</strong> ${d.data.productCount}`
+      )
       .style("left", `${x}px`)
       .style("top", `${y - 28}px`);
   };
 
   const removeTooltip = () => {
-    div
-      .transition()
-      .duration(200)
-      .style("opacity", 0);
+    div.transition().duration(200).style("opacity", 0);
   };
 
   const simulation = d3
     .forceSimulation(nodes)
-    .force("link", d3.forceLink(links).id(d => d.id ))
+    .force(
+      "link",
+      d3.forceLink(links).id((d) => d.id)
+    )
     .force("charge", d3.forceManyBody().strength(-150))
     .force("x", d3.forceX())
     .force("y", d3.forceY());
@@ -91,23 +95,25 @@ export function runForceGraph(
     .select(container)
     .append("svg")
     .attr("viewBox", [-width / 2, -height / 2, width, height])
-    .call(d3.zoom().on("zoom", function () {
-      svg.attr("transform", d3.event.transform);
-    }));
+    .call(
+      d3.zoom().on("zoom", function () {
+        svg.attr("transform", d3.event.transform);
+      })
+    );
 
   const link = svg
     .append("g")
     .attr("stroke", "#999")
-    .attr("stroke-opacity", 0.6)
+    .attr("stroke-opacity", 0.9)
     .selectAll("line")
     .data(links)
     .join("line")
-    .attr("stroke-width", d => Math.sqrt(d.value));
+    .attr("stroke-width", (d) => Math.sqrt(d.value));
 
   const node = svg
     .append("g")
     .attr("stroke", "#fff")
-    .attr("stroke-width", 2)
+    .attr("stroke-width", 1)
     .selectAll("circle")
     .data(nodes)
     .join("circle")
@@ -115,21 +121,27 @@ export function runForceGraph(
     .attr("fill", color)
     .call(drag(simulation));
 
-  const label = svg.append("g")
+  const label = svg
+    .append("g")
     .attr("class", "labels")
     .selectAll("text")
     .data(nodes)
     .enter()
     .append("text")
-    .attr('text-anchor', 'middle')
-    .attr('dominant-baseline', 'central')
-    .attr("class", d => `fa ${getClass(d)}`)
-    .text(d => {return icon(d);})
+    .attr("text-anchor", "middle")
+    .attr("dominant-baseline", "central")
+    .attr("class", (d) => `fa ${getClass(d)}`)
+    .text((d) => {
+      return d.data.productCount;
+    })
+    .style("font-size", "8px")
+    .style("fill", "black")
     .call(drag(simulation));
 
-  label.on("mouseover", (d) => {
-    addTooltip(nodeHoverTooltip, d, d3.event.pageX, d3.event.pageY);
-  })
+  label
+    .on("mouseover", (d) => {
+      addTooltip(nodeHoverTooltip, d, d3.event.pageX, d3.event.pageY);
+    })
     .on("mouseout", () => {
       removeTooltip();
     });
@@ -137,20 +149,22 @@ export function runForceGraph(
   simulation.on("tick", () => {
     //update link positions
     link
-      .attr("x1", d => d.source.x)
-      .attr("y1", d => d.source.y)
-      .attr("x2", d => d.target.x)
-      .attr("y2", d => d.target.y);
+      .attr("x1", (d) => d.source.x)
+      .attr("y1", (d) => d.source.y)
+      .attr("x2", (d) => d.target.x)
+      .attr("y2", (d) => d.target.y);
 
     // update node positions
-    node
-      .attr("cx", d => d.x)
-      .attr("cy", d => d.y);
+    node.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
 
     // update label positions
     label
-      .attr("x", d => { return d.x; })
-      .attr("y", d => { return d.y; })
+      .attr("x", (d) => {
+        return d.x;
+      })
+      .attr("y", (d) => {
+        return d.y;
+      });
   });
 
   return {
@@ -159,6 +173,6 @@ export function runForceGraph(
     },
     nodes: () => {
       return svg.node();
-    }
+    },
   };
 }
