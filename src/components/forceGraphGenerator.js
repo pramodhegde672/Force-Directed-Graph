@@ -4,11 +4,14 @@ import styles from "./forceGraph.module.css";
 
 export function runForceGraph(
   container,
-  edgesData,
+  linksData,
   nodesData,
   nodeHoverTooltip
 ) {
-  const links = edgesData.map((d) => Object.assign({}, d));
+  // Clear the container
+  d3.select(container).selectAll("*").remove();
+
+  const links = linksData.map((d) => Object.assign({}, d));
   const nodes = nodesData.map((d) => Object.assign({}, d));
 
   const containerRect = container.getBoundingClientRect();
@@ -16,15 +19,16 @@ export function runForceGraph(
   const width = containerRect.width;
 
   const color = () => {
-    return "#9D79A0";
+    return "blue";
   };
 
-  const icon = (d) => {
-    return d.gender === "male" ? "\uf222" : "\uf221";
-  };
+  // const icon = (d) => {
+  //   return d.data.type === "Category" ? "\uf222" : "\F66B";
+  // }
 
   const getClass = (d) => {
-    return d.gender === "male" ? styles.male : styles.female;
+    console.log(d, "c");
+    return d.data.type === "Category" ? styles.male : styles.female;
   };
 
   const drag = (simulation) => {
@@ -66,7 +70,9 @@ export function runForceGraph(
   const addTooltip = (hoverTooltip, d, x, y) => {
     div.transition().duration(200).style("opacity", 0.9);
     div
-      .html(hoverTooltip(d))
+      .html(
+        `<strong>ID:</strong> ${d.data.id}<br> <strong>Product Count:</strong> ${d.data.productCount}`
+      )
       .style("left", `${x}px`)
       .style("top", `${y - 28}px`);
   };
@@ -98,7 +104,7 @@ export function runForceGraph(
   const link = svg
     .append("g")
     .attr("stroke", "#999")
-    .attr("stroke-opacity", 0.6)
+    .attr("stroke-opacity", 0.9)
     .selectAll("line")
     .data(links)
     .join("line")
@@ -107,7 +113,7 @@ export function runForceGraph(
   const node = svg
     .append("g")
     .attr("stroke", "#fff")
-    .attr("stroke-width", 2)
+    .attr("stroke-width", 1)
     .selectAll("circle")
     .data(nodes)
     .join("circle")
@@ -126,8 +132,10 @@ export function runForceGraph(
     .attr("dominant-baseline", "central")
     .attr("class", (d) => `fa ${getClass(d)}`)
     .text((d) => {
-      return icon(d);
+      return d.data.productCount;
     })
+    .style("font-size", "8px")
+    .style("fill", "black")
     .call(drag(simulation));
 
   label
